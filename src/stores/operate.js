@@ -137,20 +137,16 @@ class Data {
          */
         doubleClick: ( user, stateTxt ) => {
             if( stateTxt === '-' ) {
-                console.log('no-setting');
-                DataContext.attend.attendance(user);
+                this.attend.attendance(user);
             } else
             if( stateTxt === '出席' ) {
-                console.log('出席');
-                DataContext.attend.absent(user);
+                this.attend.absent(user);
             } else
             if( stateTxt === '欠席' ) {
-                console.log('欠席');
-                DataContext.state.editStatus([user, 'コメント入力中...']);
+                this.state.editStatus([user, '']);
             } else
             if( typeof stateTxt === 'string' ) {
-                console.log('コメント');
-                DataContext.state.editStatus([user,'']);
+                this.state.editStatus([user,'']);
             }
         }
     }
@@ -158,8 +154,5 @@ class Data {
 
 
 
-const DataContext = new Data();
-export default DataContext;
-
-
-// new Int16Array( 100000000 ).forEach(()=>{console.log('test')})
+const DataOperate = new Data();
+export default DataOperate;

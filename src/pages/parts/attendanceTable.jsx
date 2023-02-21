@@ -7,7 +7,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { TableHead, Button, TextField, Card } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import DataContext from '../../stores/operate';
+import DataOperate from '../../stores/operate';
 import Popup from './popup';
 
 
@@ -67,7 +67,7 @@ function UserNamesTable(props) {
           <Popup open={remV} closeFunc={() => { setRemV(false) }} element={
             <Card sx={{ display: 'flex', flexFlow: 'column', justifyContent: 'center', padding: 4 }}>
               {selectUser}
-              <Button onClick={() => { setRemV(false); DataContext.user.removeUser(selectUser) }}>除外する</Button>
+              <Button onClick={() => { setRemV(false); DataOperate.user.removeUser(selectUser) }}>除外する</Button>
             </Card>
           } />
 
@@ -96,7 +96,8 @@ function UserNamesTable(props) {
 function DayAndStatusTable(props) {
   const dailyData = props.stateData;
   const [selectUser, setSelectUser] = React.useState('');
-  const [openV, setOpenV] = React.useState(false);
+  const [textFieldOpenV, setTextFieldOpenV] = React.useState(false);
+  const [reconfirmation, setReconfirmation ] = React.useState(false);
   const [comTxt, setComTxt] = React.useState('');
   if (dailyData.length === 0) return <TableRow><TableCell>Loading...:stateData</TableCell></TableRow>
   function createDayTitle(day) {
@@ -130,21 +131,30 @@ function DayAndStatusTable(props) {
                     sx={
                       (() => {
                         // 一番右のDayAndStatusTableを設定
-                        if (dayI !== Object.keys(dailyData).length - 1) r[':hover'] = {};
-                        if (userI % 2 !== 0) r['background'] = 'rgba(0, 0, 0, 0.2)';
-                        if (stateTxt === '出席') {
+                        if( dayI !== Object.keys(dailyData).length - 1) r[':hover'] = {};
+                        if( userI % 2 !== 0) r['background'] = 'rgba(0, 0, 0, 0.2)';
+                        if( stateTxt === '出席') {
                           r['color'] = '#1976d2';
                         } else
-                          if (stateTxt === '欠席') {
-                            r['color'] = 'red';
-                          }
+                        if( stateTxt === '欠席') {
+                          r['color'] = 'red';
+                        }
                         return r;
                       })()
                     }
                     onDoubleClick={(e) => {
+                      if( day !== new Date().toLocaleDateString().split(' ')[0] )return;
+                      setComTxt('');
                       setSelectUser(user);
-                      DataContext.toggle.doubleClick( user, stateTxt );
-                      if( stateTxt === '欠席' )setOpenV(true);
+                      if( stateTxt === '出席' || stateTxt === '欠席' || stateTxt === '-' ) {
+                        DataOperate.toggle.doubleClick( user, stateTxt );
+                      } else {
+                        setReconfirmation(true);
+                      }
+
+                      if( stateTxt === '欠席' ) {
+                        setTextFieldOpenV(true);
+                      }
                     }}
                     key={userI}
                   >
@@ -161,12 +171,21 @@ function DayAndStatusTable(props) {
       )
     }
     {/* popup ====================================================================================================== */}
-      <Popup open={openV} closeFunc={()=>{setOpenV(false)}} element={
+      <Popup open={textFieldOpenV} closeFunc={()=>{setTextFieldOpenV(false)}} element={
         <Card sx={{ display: 'flex', flexFlow: 'column', padding: 2 }}>
           <TextField multiline autoComplete='off' id="comInput" label="コメントを入力" variant="standard" onChange={(e)=>setComTxt(e.target.value)} />
-          <Button onClick={()=>{setOpenV(false);DataContext.state.editStatus([selectUser, comTxt])}}>送信</Button>
+          <Button onClick={()=>{setTextFieldOpenV(false);DataOperate.state.editStatus([selectUser, comTxt])}}>送信</Button>
         </Card>
-      } />
+      }
+      />
+
+      <Popup open={reconfirmation} closeFunc={()=>{setReconfirmation(false)}} element={
+        <Card sx={{display: 'flex', flexFlow: 'column'}}>
+          コメントを更新(コメントは削除される)
+          <Button onClick={()=>{setReconfirmation(false);DataOperate.state.editStatus([selectUser, ''])}}>更新</Button>
+        </Card>
+      }
+      />
     {/* popup ====================================================================================================== */}
     </>
   )
@@ -191,8 +210,8 @@ function AttendanceTable(props) {
 
   React.useEffect(() => {
     if (props.mode === 'demo') return;
-    DataContext.onSnapshot((data) => {
-      if (!(new Date().toLocaleDateString().split(' ')[0] in data['state-data'])) DataContext.state.addToday();
+    DataOperate.onSnapshot((data) => {
+      if(!(new Date().toLocaleDateString().split(' ')[0] in data['state-data']))DataOperate.state.addToday();
       setUsers(data.users.sort());
       setStateData(data['state-data']);
     });
