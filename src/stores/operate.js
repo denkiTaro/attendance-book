@@ -57,6 +57,20 @@ class Data {
             updateDoc( this[_docRef], {
                 'users': arrayRemove(user)
             } );
+            const entriesData = [];
+            getDoc(this[_docRef])
+            .then( (data)=> {
+                Object.entries(data.data()['state-data']).forEach( (e)=> {
+                    const day = e[0];
+                    const userAndStatusObj = e[1];
+                    delete userAndStatusObj[user];
+                    entriesData.push( [day, userAndStatusObj] );
+                } );
+                const upData = Object.fromEntries(entriesData);
+                updateDoc( this[_docRef], {
+                    'state-data': upData
+                } );
+            } );
             console.log('removed user');
         },
         /**
@@ -65,12 +79,34 @@ class Data {
          * @param { String } newUser 
          */
         changeName: ( user='', newUser='' ) => {
-            if( newUser === '' )return;
+            if( newUser === '' || user === '' )return;
             updateDoc( this[_docRef], {
                 'users': arrayRemove(user),
-            } )
+            } );
             updateDoc( this[_docRef], {
                 'users': arrayUnion(newUser),
+            } );
+
+            getDoc(this[_docRef])
+            .then( (data)=> {
+                const entriesData = [];
+                Object.entries(data.data()['state-data']).forEach( (e)=> {
+                    const day = e[0];
+                    const userAndStatusObj = e[1];
+                    if( user in userAndStatusObj ) {
+                        userAndStatusObj[newUser] = userAndStatusObj[user];
+                        delete userAndStatusObj[user];
+                        entriesData.push( [day, userAndStatusObj ] );
+                    } else {
+                        entriesData.push( [day,userAndStatusObj] );
+                    }
+                } );
+                console.log( Object.fromEntries(entriesData) );
+                const upData = Object.fromEntries(entriesData);
+                updateDoc( this[_docRef], {
+                    'state-data': upData
+                }
+                )
             } )
         } 
     }
@@ -165,7 +201,5 @@ class Data {
     }
 }
 
-
-new Data().user.changeName('Test');
 
 export default Data;

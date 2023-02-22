@@ -37,14 +37,14 @@ function UserNamesTable(props) {
           if (!props.button) return <TableCell sx={{ height: 56.6666 }}></TableCell>
         })()
       }
-      {/* popup ============================================================== */}
+      {/* popup ユーザー編集============================================================== */}
       <Popup open={openV} closeFunc={() => { setOpenV(false) }} element={
         <TableRow sx={{ display: 'flex', flexFlow: 'column' }}>
 
           <TableCell sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Button onClick={() => { setAddV(true) }}>ユーザーを追加</Button>
           </TableCell>
-          {/* popup ======================= */}
+          {/* popup ユーザー追加======================= */}
           <Popup open={addV} closeFunc={() => { setAddV(false) }} element={
             <Card sx={{ display: 'flex', flexFlow: 'column', padding: 2 }}>
               <TextField onChange={(e)=>{setSettingUser(e.target.value)}} sx={{ height: 64, padding: 1 }} id="outlined-basic" label="新しいユーザーを追加" autoComplete='off' variant="outlined" />
@@ -62,7 +62,7 @@ function UserNamesTable(props) {
               </TableCell>)
           }
 
-          {/* ================================ */}
+          {/* ユーザー名変更================================ */}
           <Popup open={editV} closeFunc={() => { setEditV(false) }} element={
             <Card sx={{ display: 'flex', flexFlow: 'column', justifyContent: 'center', padding: 4 }}>
               {selectUser}
@@ -72,7 +72,8 @@ function UserNamesTable(props) {
               <Button onClick={(e) => { setEditV(false);DataOperate.user.changeName(selectUser, settingUser) }}>名前を変更する(変更前のデータは消える)</Button>
             </Card>
           } />
-          {/* ================================ */}
+
+          {/* ユーザー削除================================ */}
           <Popup open={remV} closeFunc={() => { setRemV(false) }} element={
             <Card sx={{ display: 'flex', flexFlow: 'column', justifyContent: 'center', padding: 4 }}>
               {selectUser}
@@ -134,13 +135,15 @@ function DayAndStatusTable(props) {
             {
               props.users.map((user, userI) => {
                 const stateTxt = dailyData[day][user] ||= '-';
-                const r = { height: 56.666666, width: 112, textAlign: 'center', overflow: 'hidden', ':hover': { padding: 0, overflowX: 'auto', height: 'auto', minHeight: 56.6666, background: 'skyblue' } };
+                const r = { height: 56.666666, width: 112, textAlign: 'center', overflow: 'hidden', ':hover': { padding: 0, height: 'auto', minHeight: 56.6666, background: 'skyblue' } };
                 return (
                   <TableCell
                     sx={
                       (() => {
                         // 一番右のDayAndStatusTableを設定
                         if( dayI !== Object.keys(dailyData).length - 1) r[':hover'] = {};
+                        r[':hover']['height'] = 'auto';
+                        r[':hover']['minHeight'] = 56.6666;
                         if( userI % 2 !== 0) r['background'] = 'rgba(0, 0, 0, 0.2)';
                         if( stateTxt === '出席') {
                           r['color'] = '#1976d2';
