@@ -3,6 +3,13 @@ import { firestore } from '../firebase/firebase';
 
 
 
+// 'state-data': {
+//     '2000/1/1': {
+//         'U1': '出席'
+//     }
+// }
+// 'users': ['u1','u2']
+
 
 
 const _docRef = Symbol();
@@ -35,6 +42,7 @@ class Data {
          * @param { String } user 
          */
         addUser: ( user ) => {
+            if( user === '' )return;
             updateDoc( this[_docRef], {
                 'users': arrayUnion(user)
             } );
@@ -45,6 +53,7 @@ class Data {
          * @param { String } user 
         */
         removeUser: ( user ) => {
+            if( user === '' )return;
             updateDoc( this[_docRef], {
                 'users': arrayRemove(user)
             } );
@@ -55,11 +64,15 @@ class Data {
          * @param { String } user 
          * @param { String } newUser 
          */
-        nameChange: ( user, newUser ) => {
-            this.onSnapshot( ( data )=>{
-
+        changeName: ( user='', newUser='' ) => {
+            if( newUser === '' )return;
+            updateDoc( this[_docRef], {
+                'users': arrayRemove(user),
             } )
-        }
+            updateDoc( this[_docRef], {
+                'users': arrayUnion(newUser),
+            } )
+        } 
     }
 
 
@@ -91,8 +104,7 @@ class Data {
          * @param {...[User<String>, State<true|false|String>]} userAndStatus Stateはtrue->出席 false->欠席 String->コメント
          */
         editStatus: ( ...userAndStatus ) => {
-            const todayLocaleString = new Date().toLocaleString();
-            const todayString = todayLocaleString.split(' ')[0];
+            const todayString = new Date().toLocaleString().split(' ')[0];
             const [users, userStatus] = [ [],[] ];
             userAndStatus.forEach( (e)=> {
                 users.push(e[0]);
@@ -131,6 +143,7 @@ class Data {
          * 一回目 出席
          * 二回目 欠席
          * 三回目 コメント
+         * 四回目 初期値
          * の繰り返し
          * @param { String } user 
          * @param { String | '-' | '出席' | '欠席' } stateTxt 現在の状態
@@ -146,13 +159,13 @@ class Data {
                 this.state.editStatus([user, '']);
             } else
             if( typeof stateTxt === 'string' ) {
-                this.state.editStatus([user,'']);
+                this.state.editStatus([user, '']);
             }
         }
     }
 }
 
 
+new Data().user.changeName('Test');
 
-const DataOperate = new Data();
-export default DataOperate;
+export default Data;

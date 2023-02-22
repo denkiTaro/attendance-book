@@ -7,8 +7,10 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { TableHead, Button, TextField, Card } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import DataOperate from '../../stores/operate';
+import Data from '../../stores/operate';
 import Popup from './popup';
+
+const DataOperate = new Data();
 
 
 // Table編集ゾーン
@@ -23,6 +25,7 @@ function UserNamesTable(props) {
   const [remV, setRemV] = React.useState(false);
   const [addV, setAddV] = React.useState(false);
   const [selectUser, setSelectUser] = React.useState('');
+  const [settingUser, setSettingUser] = React.useState('');
   if (props.users.length === 0) return <TableRow><TableCell>Loading...:users</TableCell></TableRow>;
 
   return (
@@ -41,6 +44,15 @@ function UserNamesTable(props) {
           <TableCell sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Button onClick={() => { setAddV(true) }}>ユーザーを追加</Button>
           </TableCell>
+          {/* popup ======================= */}
+          <Popup open={addV} closeFunc={() => { setAddV(false) }} element={
+            <Card sx={{ display: 'flex', flexFlow: 'column', padding: 2 }}>
+              <TextField onChange={(e)=>{setSettingUser(e.target.value)}} sx={{ height: 64, padding: 1 }} id="outlined-basic" label="新しいユーザーを追加" autoComplete='off' variant="outlined" />
+              <Button onClick={()=>{setAddV(false);DataOperate.user.addUser(settingUser)}}>送信</Button>
+            </Card>
+          } />
+          {/* popup ======================= */}
+
           {
             props.users.map((user) =>
               <TableCell key={user}>
@@ -50,20 +62,17 @@ function UserNamesTable(props) {
               </TableCell>)
           }
 
-          <Popup open={addV} closeFunc={() => { setAddV(false) }} element={
-            <Card sx={{ display: 'flex', flexFlow: 'column', justifyContent: 'center', padding: 4 }}>
-              test
-            </Card>
-          } />
+          {/* ================================ */}
           <Popup open={editV} closeFunc={() => { setEditV(false) }} element={
             <Card sx={{ display: 'flex', flexFlow: 'column', justifyContent: 'center', padding: 4 }}>
               {selectUser}
               を次のように変更
               <TextField sx={{ height: 64 }} autoComplete='off' id="remVInput" defaultValue={selectUser}
-                label="(~) は使用不可" variant="standard" />
-              <Button onClick={() => { setEditV(false) }}>名前を変更する</Button>
+                label="新しい名前を入力" onChange={(e)=>{setSettingUser(e.target.value)}} variant="standard" />
+              <Button onClick={(e) => { setEditV(false);DataOperate.user.changeName(selectUser, settingUser) }}>名前を変更する(変更前のデータは消える)</Button>
             </Card>
           } />
+          {/* ================================ */}
           <Popup open={remV} closeFunc={() => { setRemV(false) }} element={
             <Card sx={{ display: 'flex', flexFlow: 'column', justifyContent: 'center', padding: 4 }}>
               {selectUser}
@@ -77,7 +86,7 @@ function UserNamesTable(props) {
 
       {
         props.users.map((user) =>
-          <TableCell sx={{ height: 56.66666, ':hover': { background: 'orange' } }} key={user}>
+          <TableCell sx={{ height: 56.66666, padding: 'auto', whiteSpace: 'nowrap', overflowX: 'auto', overflowY: 'hidden', ':hover': { background: 'orange' }, '::-webkit-scrollbar': { display: 'none' } }} key={user}>
             {user}
           </TableCell>
         )
@@ -180,7 +189,7 @@ function DayAndStatusTable(props) {
       />
 
       <Popup open={reconfirmation} closeFunc={()=>{setReconfirmation(false)}} element={
-        <Card sx={{display: 'flex', flexFlow: 'column'}}>
+        <Card sx={{display: 'flex', padding: 2, flexFlow: 'column'}}>
           コメントを更新(コメントは削除される)
           <Button onClick={()=>{setReconfirmation(false);DataOperate.state.editStatus([selectUser, ''])}}>更新</Button>
         </Card>
@@ -197,25 +206,30 @@ function DayAndStatusTable(props) {
 // 本体ゾーン
 /**
  * 
- * @param { {mode: 'initial' | 'demo'| 'showAll' } } props 
+ * @param { {mode: 'week' | 'showAll' } } props 
  * @returns 
  */
 function AttendanceTable(props) {
-  const [initialUsers, initialStateData] =
-    (props.mode === 'demo')
-      ? [['U1', 'U2', 'U3'], { '2010/10/10': { 'U1': true }, '2010/10/11': { 'U2': false }, '2010/10/12': { 'U3': 'コメント' } }]
-      : [[], []];
-  const [users, setUsers] = React.useState(initialUsers);
-  const [stateData, setStateData] = React.useState(initialStateData);
+  const [users, setUsers] = React.useState([]);
+  const [stateData, setStateData] = React.useState([]);
+  const firstRef = React.useRef(true);
 
-  React.useEffect(() => {
+  React.useEffect((e) => {
     if (props.mode === 'demo') return;
+    // useEffect が2回発火に対する対処
+    if( firstRef.current ) {
+      firstRef.current = false;
+      return;
+    }
+    // 
     DataOperate.onSnapshot((data) => {
       if(!(new Date().toLocaleDateString().split(' ')[0] in data['state-data']))DataOperate.state.addToday();
       setUsers(data.users.sort());
       setStateData(data['state-data']);
-    });
+    } )
+
   }, []);
+
 
   return (
     <TableContainer component={Paper}>
