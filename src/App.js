@@ -1,16 +1,23 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./pages/home/home";
+import Book from "./pages/book";
 import './App.css';
+import Home from "./pages/home";
+import Memory from "./pages/memory";
+
+
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={ <Home></Home> } ></Route>
-        <Route path="/memory" element={<div>memory</div>} ></Route>
+        <Route path="/home" element={ <Home></Home> }></Route>
+        <Route path="/" element={ <Book></Book> } ></Route>
+        <Route path="/memory" element={ <Memory></Memory> } ></Route>
       </Routes>
     </BrowserRouter>
   );
 }
+
+
 
 export default App;
