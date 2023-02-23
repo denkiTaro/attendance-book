@@ -12,40 +12,56 @@ import { firestore } from '../firebase/firebase';
 
 
 
+/**
+ * 今月分のデータをfirebase/<project>/dataに移す
+ * lastUpdate を更新する
+ * @param { Boolean } reset 今月分のデータは消える(移すので本質的にはデータは残る)
+ */
+function transferThisMonthData( reset ) {
+    // 一週間分のデータをまとめてweek data から dataにセットする
+    getDocs( collection( firestore, 'denki-club' ) )
+    .then( (summaryDoc) => {
+        // data, week data どちらも保持 = summaryDocs
+        const newData = {};
+        summaryDoc.forEach( (doc) => {
+            // state-data, users を保持 = doc.data()
+            newData[doc.id] = doc.data();
+        } );
+        // users作成 -> オブジェクトはmergeできるが配列はできないのでここで生成===============
+        const integratedUsers = newData['data']['users'].concat( newData['month-data']['users'] );
+        const siftedUsers = integratedUsers.filter( function(v,i,arr){ return arr.indexOf(v) === i } );
+        // ================================================================================
+        setDoc( doc( firestore, 'denki-club', 'data' ), {
+            'state-data': newData['month-data']['state-data'],
+            'users': siftedUsers,
+        }, { merge: true } );
+
+        if( reset === true ) {
+            // week data initializeする
+            setDoc( doc(firestore, 'denki-club', 'month-data'), {
+                'state-data': {},
+                'users': [],
+            } );
+        }
+    } )
+    .then( ()=> {
+        const thisMonth = new Date().getMonth() + 1;
+        setDoc( doc(firestore, 'denki-club', 'data'), {
+            'lastUpdate': thisMonth,
+        } )
+    } );
+}
+
+
+
 const _docRef = Symbol();
 class Operate {
     /**
      * 
-     * @param { 'data'|'week-data' } scope 
-     * @param { Boolean } weeklyUpdate 
+     * @param { 'data'|'month-data' } scope 
      */
-    constructor( scope = 'week-data', weeklyUpdate ) {
+    constructor( scope = 'month-data' ) {
         this[_docRef] = doc( firestore, 'denki-club', scope );
-
-        if( weeklyUpdate !== true )return;
-        // 一週間分のデータをまとめてweek data から dataにセットする
-        getDocs( collection( firestore, 'denki-club' ) )
-        .then( (summaryDoc) => {
-            // data, week data どちらも保持 = summaryDocs
-            const newData = {};
-            summaryDoc.forEach( (doc) => {
-                // state-data, users を保持 = doc.data()
-                newData[doc.id] = doc.data();
-            } );
-            // users作成 -> オブジェクトはmergeできるが配列はできないのでここで生成===============
-            const integratedUsers = newData['data']['users'].concat( newData['week-data']['users'] );
-            const siftedUsers = integratedUsers.filter( function(v,i,arr){ return arr.indexOf(v) === i } );
-            // ================================================================================
-            setDoc( doc( firestore, 'denki-club', 'data' ), {
-                'state-data': newData['week-data']['state-data'],
-                'users': siftedUsers,
-            }, { merge: true } );
-            // week data initializeする
-            setDoc( doc(firestore, 'denki-club', 'week-data'), {
-                'state-data': {},
-                'users': [],
-            } );
-        } )
     }
 
     /**
@@ -228,3 +244,4 @@ class Operate {
 
 
 export default Operate;
+export {transferThisMonthData};
