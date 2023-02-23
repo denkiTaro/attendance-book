@@ -48,7 +48,7 @@ function transferThisMonthData( reset ) {
         const thisMonth = new Date().getMonth() + 1;
         setDoc( doc(firestore, 'denki-club', 'data'), {
             'lastUpdate': thisMonth,
-        } )
+        } );
     } );
 }
 
@@ -76,6 +76,28 @@ class Operate {
                 console.log('did onSnapshot');
             }
         )
+    }
+
+    /**
+     * 今月更新がされていないことを確認してtransferThisMonthData()を実行する
+     */
+    checkAndUpdate() {
+        getDoc( doc(firestore, 'denki-club', 'data') )
+        .then( (e) => {
+            if(e.data()['lastUpdate'] !== new Date().getMonth() + 1 ) {
+                transferThisMonthData(true);
+            }
+        } )
+    }
+
+    mode = {
+        /**
+         * 
+         * @param { 'data'|'month-data' } scope 
+         */
+        changeMode: ( scope ) => {
+            this[_docRef] = doc( firestore, 'denki-club', scope );
+        }
     }
 
     user = {

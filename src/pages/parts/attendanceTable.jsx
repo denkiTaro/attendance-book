@@ -10,7 +10,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import Operate from '../../stores/operate';
 import Popup from './popup';
 
-const DataOperate = new Operate('month-data');
+
+
+const DataOperate = new Operate();
+DataOperate.checkAndUpdate();
 
 
 // Table編集ゾーン
@@ -31,10 +34,10 @@ function UserNamesTable(props) {
       {/* 一時表示部分 */}
       {
         (() => {
-          if (props.button) return <TableCell sx={{ height: 56.6666 }}><Button onClick={() => { setOpenV(true) }}>
+          if (!props.button) return <TableCell sx={{ height: 56.6666 }}><Button onClick={() => { setOpenV(true) }}>
             ユーザー編集
           </Button></TableCell>;
-          if (!props.button) return <TableCell sx={{ height: 56.6666 }}></TableCell>
+          if (props.button) return <TableCell sx={{ height: 56.6666 }}></TableCell>
         })()
       }
       {/* popup ユーザー編集============================================================== */}
@@ -227,14 +230,15 @@ function DayAndStatusTable(props) {
 // 本体ゾーン
 /**
  * 
- * @param { {mode: 'week' | 'showAll' } } props 
+ * @param { {mode: 'month-data' | 'data' } } props 
  * @returns 
  */
 function AttendanceTable(props) {
   const [users, setUsers] = React.useState([]);
   const [stateData, setStateData] = React.useState([]);
   const firstRef = React.useRef(true);
-
+  if( props.mode === 'data' )DataOperate.mode.changeMode('data');
+  
   React.useEffect((e) => {
     // useEffect が2回発火に対する対処
     if( firstRef.current ) {
@@ -258,7 +262,7 @@ function AttendanceTable(props) {
         {/* リバースしてるので逆 */}
         {/* 一番右のtable */}
         <TableHead>
-          <UserNamesTable button users={users}></UserNamesTable>
+          <UserNamesTable users={users}></UserNamesTable>
         </TableHead>
         {/* 一番右のtable */}
         {/* ============================================= */}
@@ -270,7 +274,7 @@ function AttendanceTable(props) {
         {/* ============================================= */}
         {/* 一番左のtable */}
         <TableHead>
-          <UserNamesTable users={users}></UserNamesTable>
+          <UserNamesTable button users={users}></UserNamesTable>
         </TableHead>
         {/* 一番左のtable */}
       </Table>
