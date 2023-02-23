@@ -1,4 +1,4 @@
-import { arrayRemove, arrayUnion, doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { firestore } from '../firebase/firebase';
 
 
@@ -13,13 +13,39 @@ import { firestore } from '../firebase/firebase';
 
 
 const _docRef = Symbol();
-class Data {
+class Operate {
     /**
      * 
      * @param { 'data'|'week-data' } scope 
+     * @param { Boolean } weeklyUpdate 
      */
-    constructor( scope = 'week-data' ) {
+    constructor( scope = 'week-data', weeklyUpdate ) {
         this[_docRef] = doc( firestore, 'denki-club', scope );
+
+        if( weeklyUpdate !== true )return;
+        // 一週間分のデータをまとめてweek data から dataにセットする
+        getDocs( collection( firestore, 'denki-club' ) )
+        .then( (summaryDoc) => {
+            // data, week data どちらも保持 = summaryDocs
+            const newData = {};
+            summaryDoc.forEach( (doc) => {
+                // state-data, users を保持 = doc.data()
+                newData[doc.id] = doc.data();
+            } );
+            // users作成 -> オブジェクトはmergeできるが配列はできないのでここで生成===============
+            const integratedUsers = newData['data']['users'].concat( newData['week-data']['users'] );
+            const siftedUsers = integratedUsers.filter( function(v,i,arr){ return arr.indexOf(v) === i } );
+            // ================================================================================
+            setDoc( doc( firestore, 'denki-club', 'data' ), {
+                'state-data': newData['week-data']['state-data'],
+                'users': siftedUsers,
+            }, { merge: true } );
+            // week data initializeする
+            setDoc( doc(firestore, 'denki-club', 'week-data'), {
+                'state-data': {},
+                'users': [],
+            } );
+        } )
     }
 
     /**
@@ -101,7 +127,6 @@ class Data {
                         entriesData.push( [day,userAndStatusObj] );
                     }
                 } );
-                console.log( Object.fromEntries(entriesData) );
                 const upData = Object.fromEntries(entriesData);
                 updateDoc( this[_docRef], {
                     'state-data': upData
@@ -192,14 +217,14 @@ class Data {
                 this.attend.absent(user);
             } else
             if( stateTxt === '欠席' ) {
-                this.state.editStatus([user, '']);
+                this.state.editStatus([user, '-']);
             } else
             if( typeof stateTxt === 'string' ) {
-                this.state.editStatus([user, '']);
+                this.state.editStatus([user, '-']);
             }
         }
     }
 }
 
 
-export default Data;
+export default Operate;

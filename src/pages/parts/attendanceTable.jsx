@@ -7,10 +7,10 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { TableHead, Button, TextField, Card } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import Data from '../../stores/operate';
+import Operate from '../../stores/operate';
 import Popup from './popup';
 
-const DataOperate = new Data();
+const DataOperate = new Operate();
 
 
 // Table編集ゾーン
@@ -26,8 +26,6 @@ function UserNamesTable(props) {
   const [addV, setAddV] = React.useState(false);
   const [selectUser, setSelectUser] = React.useState('');
   const [settingUser, setSettingUser] = React.useState('');
-  if (props.users.length === 0) return <TableRow><TableCell>Loading...:users</TableCell></TableRow>;
-
   return (
     <TableRow sx={{ display: 'flex', flexFlow: 'column', width: 160, borderRight: '1px solid rgba(224, 224, 224, 1)' }}>
       {/* 一時表示部分 */}
@@ -69,7 +67,7 @@ function UserNamesTable(props) {
               を次のように変更
               <TextField sx={{ height: 64 }} autoComplete='off' id="remVInput" defaultValue={selectUser}
                 label="新しい名前を入力" onChange={(e)=>{setSettingUser(e.target.value)}} variant="standard" />
-              <Button onClick={(e) => { setEditV(false);DataOperate.user.changeName(selectUser, settingUser) }}>名前を変更する(変更前のデータは消える)</Button>
+              <Button onClick={(e) => { setEditV(false);DataOperate.user.changeName(selectUser, settingUser) }}>名前を変更する</Button>
             </Card>
           } />
 
