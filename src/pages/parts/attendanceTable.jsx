@@ -236,16 +236,15 @@ function DayAndStatusTable(props) {
 function AttendanceTable(props) {
   const [users, setUsers] = React.useState([]);
   const [stateData, setStateData] = React.useState([]);
-  const firstRef = React.useRef(true);
+  // const firstRef = React.useRef(true);
   if( props.mode === 'data' )DataOperate.mode.changeMode('data');
   
   React.useEffect((e) => {
     // useEffect が2回発火に対する対処
-    if( firstRef.current ) {
-      firstRef.current = false;
-      return;
-    }
-    // 
+    // if( firstRef.current ) {
+    //   firstRef.current = false;
+    //   return;
+    // }
     DataOperate.onSnapshot((data) => {
       if(!(new Date().toLocaleDateString().split(' ')[0] in data['state-data']))DataOperate.state.addToday();
       setUsers(data.users.sort());

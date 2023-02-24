@@ -15,7 +15,7 @@ import Button from '@mui/material/Button';
 function Header( props ) {
   return(
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" sx={{ background: props.color }}>
+      <AppBar position="static" sx={{ background: (props.color)?props.color.toString():'#1976EB' }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             デジタル出席簿(Digital&nbsp;Attendance&nbsp;Book)

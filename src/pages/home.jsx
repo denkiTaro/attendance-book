@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import Footer from "../components/footer/footer";
 import Header from "../components/header/header";
-import Card from '@mui/material/Card';
-import { Container } from "@mui/system";
+// import Card from '@mui/material/Card';
+// import { Container } from "@mui/system";
 
 function Home() {
     return (
