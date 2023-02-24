@@ -160,6 +160,7 @@ function DayAndStatusTable(props) {
                         if( dayI !== Object.keys(dailyData).length - 1) r[':hover'] = {};
                         r[':hover']['height'] = 'auto';
                         r[':hover']['minHeight'] = 56.6666;
+                        r[':hover']['padding'] = 0;
                         if( userI % 2 !== 0) r['background'] = 'rgba(0, 0, 0, 0.2)';
                         if( stateTxt === '出席') {
                           r['color'] = '#1976d2';
@@ -239,14 +240,16 @@ function AttendanceTable(props) {
   // const firstRef = React.useRef(true);
   if( props.mode === 'data' )DataOperate.mode.changeMode('data');
   
-  React.useEffect((e) => {
+  React.useEffect(() => {
     // useEffect が2回発火に対する対処
     // if( firstRef.current ) {
     //   firstRef.current = false;
     //   return;
     // }
     DataOperate.onSnapshot((data) => {
-      if(!(new Date().toLocaleDateString().split(' ')[0] in data['state-data']))DataOperate.state.addToday();
+      if( props.mode === 'month-data' ) {
+        if(!(new Date().toLocaleDateString().split(' ')[0] in data['state-data']))DataOperate.state.addToday();
+      }
       setUsers(data.users.sort());
       setStateData(data['state-data']);
     } )

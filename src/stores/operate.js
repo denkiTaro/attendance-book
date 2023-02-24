@@ -15,9 +15,9 @@ import { firestore } from '../firebase/firebase';
 /**
  * 今月分のデータをfirebase/<project>/dataに移す
  * lastUpdate を更新する
- * @param { Boolean } reset 今月分のデータは消える(移すので本質的にはデータは残る)
+ * @param { Boolean } statusReset 今月分のデータは消える(移すので本質的にはデータは残る)
  */
-function transferThisMonthData( reset ) {
+function transferThisMonthData( statusReset ) {
     // 一週間分のデータをまとめてweek data から dataにセットする
     getDocs( collection( firestore, 'denki-club' ) )
     .then( (summaryDoc) => {
@@ -36,19 +36,15 @@ function transferThisMonthData( reset ) {
             'users': siftedUsers,
         }, { merge: true } );
 
-        if( reset === true ) {
+        if( statusReset === true ) {
             // week data initializeする
+            const thisMonth = new Date().getMonth() + 1;
             setDoc( doc(firestore, 'denki-club', 'month-data'), {
                 'state-data': {},
                 'users': [],
+                'lastUpdate': thisMonth,
             } );
         }
-    } )
-    .then( ()=> {
-        const thisMonth = new Date().getMonth() + 1;
-        setDoc( doc(firestore, 'denki-club', 'data'), {
-            'lastUpdate': thisMonth,
-        } );
     } );
 }
 
@@ -79,7 +75,7 @@ class Operate {
     }
 
     /**
-     * 今月更新がされていないことを確認してtransferThisMonthData()を実行する
+     * 今月更新がされていないことを確認してtransferThisMonthData(true)を実行する
      */
     checkAndUpdate() {
         getDoc( doc(firestore, 'denki-club', 'data') )

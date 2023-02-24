@@ -20,7 +20,7 @@ function Header( props ) {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             デジタル出席簿(Digital&nbsp;Attendance&nbsp;Book)
           </Typography>
-          <Button font href={ (()=>{ return (window.location.pathname === '/')?'/memory':'/' })() } sx={{color: '#fff', width: 'initial'}}>
+          <Button href={ (()=>{ return (window.location.pathname === '/')?'/memory':'/' })() } sx={{color: '#fff', width: 'initial'}}>
             {
               (()=>{
                 if( window.location.pathname === '/' ) {
