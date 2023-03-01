@@ -1,4 +1,4 @@
-import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, onSnapshot, updateDoc } from 'firebase/firestore';
 import { firestore } from '../firebase/firebase';
 
 
@@ -31,18 +31,19 @@ function transferThisMonthData( statusReset ) {
         const integratedUsers = newData['data']['users'].concat( newData['month-data']['users'] );
         const siftedUsers = integratedUsers.filter( function(v,i,arr){ return arr.indexOf(v) === i } );
         // ================================================================================
-        setDoc( doc( firestore, 'denki-club', 'data' ), {
+        updateDoc( doc( firestore, 'denki-club', 'data' ), {
             'state-data': newData['month-data']['state-data'],
             'users': siftedUsers,
-        }, { merge: true } );
+        } );
 
         if( statusReset === true ) {
             // week data initializeする
             const thisMonth = new Date().getMonth() + 1;
-            setDoc( doc(firestore, 'denki-club', 'month-data'), {
-                'state-data': {},
-                'users': [],
-                'lastUpdate': thisMonth,
+            updateDoc( doc(firestore, 'denki-club', 'month-data'), {
+                'state-data': {}
+            } );
+            updateDoc( doc(firestore, 'denki-club', 'data'), {
+                'lastUpdate': thisMonth
             } );
         }
     } );
